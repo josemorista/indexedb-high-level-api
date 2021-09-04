@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+</head>
+
+<body>
+	<button id="createDbBtn">Create DB</button>
+	<form method="POST" id="noteForm">
+		<input type="text" name="title" id="note_title" />
+		<input type="text" name="text" id="note_text" />
+		<button type="submit">Add Note</button>
+	</form>
+
+	<script src="/scripts/IndexedDb.js"></script>
+	<script>
+		let db = null;
+
+		const manageDatabase = async () => {
+			db = new IndexedDb("notes", 1, {
+				"personal_notes": {
+					keyPath: "title"
+				},
+				"todo_notes": {
+					keyPath: "title"
+				}
+			});
+		}
+
+		const addNoteAndDelete = async (e) => {
+			e.preventDefault();
+			const values = document.getElementById("noteForm").elements;
+			const data = {
+				title: values["title"].value,
+				text: values["text"].value
+			};
+			try {
+				await db.put("personal_notes", data);
+				console.log(await db.query("personal_notes"));
+
+				await db.delete("personal_notes", data.title);
+				console.log(await db.query("personal_notes", e => (e.title.charAt(0) === "a")));
+
+			} catch (error) {
+				console.error("Error:", error.message);
+			}
+		}
+
+		const createDbBtn = document.getElementById("createDbBtn");
+		createDbBtn.addEventListener("click", manageDatabase);
+
+		const form = document.getElementById("noteForm");
+		form.addEventListener("submit", addNoteAndDelete);
+	</script>
+</body>
+
+</html>
